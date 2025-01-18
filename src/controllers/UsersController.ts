@@ -42,11 +42,24 @@ export class UsersController {
     let users;
 
     if (role === "user") {
-      users = await prisma.user.findUnique({ where: { id } });
-      return res.status(200).json(users);
+      users = await prisma.user.findUnique({
+        where: { id },
+      });
+
+      const team = await prisma.teamMember.findFirst({
+        where: { user_id: id },
+      });
+
+      console.log(team);
+
+      const tasks = await prisma.task.findMany({
+        where: { team_id: team?.team_id },
+      });
+
+      return res.status(200).json({ users, tasks });
     }
 
-    users = await prisma.user.findMany();
+    users = await prisma.user.findMany({ include: { tasks: true } });
 
     return res.status(200).json(users);
   }

@@ -12,20 +12,48 @@ const membersController = new MembersController();
 const tasksController = new TasksController();
 
 teamsRoutes.use(authAutenticated);
-teamsRoutes.use(userAuthorization(["admin"]));
 
 //Rotas relacionadas ao gerenciamento de times.
-teamsRoutes.get("/", teamsController.index);
-teamsRoutes.get("/:id", teamsController.show);
-teamsRoutes.post("/", teamsController.create);
-teamsRoutes.put("/:id", teamsController.update);
-teamsRoutes.delete("/:id", teamsController.delete);
+teamsRoutes.get("/", userAuthorization(["admin"]), teamsController.index);
+teamsRoutes.get("/:id", userAuthorization(["admin"]), teamsController.show);
+teamsRoutes.post("/", userAuthorization(["admin"]), teamsController.create);
+teamsRoutes.put("/:id", userAuthorization(["admin"]), teamsController.update);
+teamsRoutes.delete(
+  "/:id",
+  userAuthorization(["admin"]),
+  teamsController.delete
+);
 
 // Rotas relacionadas ao gerenciamentos dos membros dos times.
-teamsRoutes.get("/:team_id/members", membersController.index);
-teamsRoutes.post("/:team_id/members", membersController.create);
-teamsRoutes.delete("/:team_id/members", membersController.delete);
+teamsRoutes.get(
+  "/:team_id/members",
+  userAuthorization(["admin"]),
+  membersController.index
+);
+teamsRoutes.post(
+  "/:team_id/members",
+  userAuthorization(["admin"]),
+  membersController.create
+);
+teamsRoutes.delete(
+  "/:team_id/members",
+  userAuthorization(["admin"]),
+  membersController.delete
+);
 
 // Rotas relacionadas as tarefas do time.
-teamsRoutes.post("/:team_id/tasks", tasksController.create);
-teamsRoutes.put("/:team_id/tasks/:task_id", tasksController.update);
+teamsRoutes.post(
+  "/:team_id/tasks",
+  userAuthorization(["admin"]),
+  tasksController.create
+);
+teamsRoutes.put(
+  "/:team_id/tasks/:task_id",
+  userAuthorization(["admin"]),
+  tasksController.update
+);
+teamsRoutes.get(
+  "/:team_id/tasks",
+  userAuthorization(["user", "admin"]),
+  tasksController.index
+);

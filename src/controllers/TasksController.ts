@@ -71,7 +71,7 @@ export class TasksController {
       priority: z.enum(["low", "medium", "high"]).default("low").nullish(),
     });
 
-    const { team_id, task_id } = paramsSchema.parse(req.params);
+    const { task_id } = paramsSchema.parse(req.params);
     const { title, description, status, priority } = bodySchema.parse(req.body);
 
     const task = await prisma.task.findUnique({ where: { id: task_id } });
@@ -104,5 +104,28 @@ export class TasksController {
     });
 
     return res.status(200).json({ message: "Task updated." });
+  }
+
+  async index(req: Request, res: Response) {
+    const { id: user_id, role } = req.user;
+
+    const paramsSchema = z.object({
+      team_id: z.string().uuid(),
+    });
+
+    const { team_id } = paramsSchema.parse(req.params);
+    const userTeam = await prisma.teamMember.findFirst({ where: { user_id } });
+
+    let tasks;
+
+    if (role === "user" && team_id === userTeam?.team_id) {
+      tasks = await prisma.task.findMany({ where: { team_id } });
+      return res.status(200).json(tasks);
+    } else if (role === "admin") {
+      tasks = await prisma.task.findMany({ include: { team: true } });
+      return res.status(200).json(tasks);
+    } else {
+      return res.status(404).json({ message: "Unauthorized." });
+    }
   }
 }
